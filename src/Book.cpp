@@ -9,10 +9,12 @@ private:
     public:
         string title;
         int pages;
+        int totalP;
         Node* first;
         Node* next;
+        Node* father;
 
-        Node(string t, int p) : title(t), pages(p), first(NULL), next(NULL) {}
+        Node(string t, int p, Node* pr = NULL) : title(t), pages(p), totalP(p), first(NULL), next(NULL), father(pr) {}
 
         ~Node() {
             Node* n = first;
@@ -23,15 +25,15 @@ private:
             }
         }
 
-        int totalPages() {
-            int sum = pages;
-            Node* r = first;
-            while(r) {
-                sum += r->totalPages();
-                r = r->next;
-            }
-            return sum;
-        }
+        // int totalPages() {
+        //     int sum = pages;
+        //     Node* r = first;
+        //     while(r) {
+        //         sum += r->totalPages();
+        //         r = r->next;
+        //     }
+        //     return sum;
+        // }
     };
 protected:
     Node* root;
@@ -76,93 +78,68 @@ public:
 
         Node* chap = root->first;
         while (chap) {
-            int curP = chap->totalPages();
+            int curP = chap->totalP;
             if (maxP < curP) {
                 maxP = curP;
                 r = chap;
             }
             chap = chap->next;
         }
-        cout << "Chuong dai nhat trong cuon sach la chuong: " << r->title << " voi " << r->pages << " trang" << endl; 
+        if (r)
+            cout << r->title << " voi tong cong " << r->totalP << " trang" << endl; 
     }
 
     bool delSection(string t) {
-        if (!root) return false;
-        return delSection(root, NULL, t);
+        Node* n = findNode(root, t);
+        if (!n || n == root) return false;
+
+        Node* r = n->father;
+        int d = -n->totalP;
+
+        if (r->first == n)
+            r->first = n->next;
+        else {
+            Node* temp = r->first;
+            while (temp->next != n) temp = temp->next;
+            temp->next = n->next;
+        }
+
+        updateChapter(r, d);
+        n->next = NULL;
+        delete n;
+        return true;
     }
 
     void findChapter(string t) {
-        if (!root) {
-            cout << "Sach rong!" << endl;
-            return;
+        Node* chap = findNode(root, t);
+        if (chap) {
+            cout << "Muc luc chuong [" << t << "] (Tong: " << chap->totalP << " trang):" << endl;
+            printChapter(chap, 1); 
+        } else {
+            cout << "Khong tim thay chuong!" << endl;
         }
-
-        Node* chap = root->first;
-        while (chap) {
-            if (chap->title == t) {
-                cout << "Tim thay chuong voi tieu de: " << t << "!" << endl;
-                printChapter(chap);
-                return;
-            }
-            chap = chap->next;
-        }
-        cout << "Khong tim thay chuong voi tieu de: " << t << "!" << endl;
     }
 
     void addNode(string a, string b, int p = 0) {
         Node* r = findNode(root, a);
         if (r) {
-            Node* newNode = new Node(b, p);
+            Node* newNode = new Node(b, p, r);
 
             if (!r->first)
                 r->first = newNode;
             else {
                 Node* temp = r->first;
-                while (temp->next)
-                    temp = temp->next;
+                while (temp->next) temp = temp->next;
                 temp->next = newNode;
             }
 
-            updateChapter(root, a, p);
+            updateChapter(r, p);
         }
         else {
             cout << "Khong tim thay tieu de!" << endl;
         }
     }
 private:
-    bool delSection(Node* parent, Node* prevSibling, string t) {
-        if(!parent) return false;
-        
-        Node* child = parent->first;
-        Node* prev = NULL;
-        
-        while(child) {
-            if(child->title == t) {
-                int deletedPages = child->totalPages();
-                
-                if(prev) {
-                    prev->next = child->next;
-                } else {
-                    parent->first = child->next;
-                }
-                
-                child->next = NULL;
-                delete child;
-                
-                updateChapter(root, parent->title, -deletedPages);
-                return true;
-            }
-            
-            if(delSection(child, prev, t)) {
-                return true;
-            }
-            
-            prev = child;
-            child = child->next;
-        }
-        return false;
-    }
-
     Node* findNode(Node* r, string t) {
         if (!r) return NULL;
 
@@ -179,31 +156,25 @@ private:
         return NULL;
     }
 
-    void updateChapter(Node* r, string t, int p) {
-        if (!r) return;
-
-        if (r->title == t) {
-            r->pages += p;
-            return;
-        }
-        
-        Node* temp = r->first;
+    void updateChapter(Node* r, int p) {
+        Node* temp = r;
         while (temp) {
-            if (findNode(temp, t)) {
-                r->pages += p;
-                updateChapter(temp, t, p);
-                return;
-            }
-
-            temp = temp->next;
+            temp->totalP += p;
+            temp = temp->father;
         }
     }
 
-    void printChapter(Node* chap) {
-        if (!chap) return;
+    void printChapter(Node* n, int i) {
+        if (!n) return;
         
-        // cout << "De muc cua chuong " << chap->title << " :" << endl;
-        
+        for (int k = 0; k < i; k++) cout << "  ";
+        cout << "- " << n->title << " (" << n->totalP << " trang)" << endl;
+
+        Node* temp = n->first;
+        while (temp) {
+            printChapter(temp, i + 1);
+            temp = temp->next;
+        }
     }
 };
 
@@ -215,13 +186,13 @@ int main() {
     book.addNode("Vat ly dien tu", "Chuong 3: Pho nang luong cua cac he hat luong tu");
 
     book.addNode("Chuong 1: Chuyen dong cua hat tich dien trong chan khong", "1.1 Phuong trinh chuyen dong trong dien truong va tu truong", 3);
-    book.addNode("Chuong 1: Chuyen dong cua hat tich dien trong chan khong", "1.2 Chuyen dong hat tich dien trong tu truong deu", 4);
-    book.addNode("Chuong 2: Mot so van de vat ly luong tu", "2.1 Luong tinh song hat cua cac he vi mo", 7);
-    book.addNode("Chuong 2: Mot so van de vat ly luong tu", "2.2 Cac tinh chat cua song De Broglie", 6);
+    book.addNode("Chuong 1: Chuyen dong cua hat tich dien trong chan khong", "1.2 Chuyen dong hat tich dien trong tu truong deu", 2);
+    book.addNode("Chuong 2: Mot so van de vat ly luong tu", "2.1 Luong tinh song hat cua cac he vi mo", 1);
+    book.addNode("Chuong 2: Mot so van de vat ly luong tu", "2.2 Cac tinh chat cua song De Broglie", 2);
     
 
-    book.addNode("1.2 Chuyen dong hat tich dien trong tu truong deu", "1.2.1 Truong hop van toc ban dau vuong goc voi tu truong", 2);
-    book.addNode("1.2 Chuyen dong hat tich dien trong tu truong deu", "1.2.2 Truong hop tong quat", 2);
+    book.addNode("1.2 Chuyen dong hat tich dien trong tu truong deu", "1.2.1 Truong hop van toc ban dau vuong goc voi tu truong", 5);
+    book.addNode("1.2 Chuyen dong hat tich dien trong tu truong deu", "1.2.2 Truong hop tong quat", 4);
     book.addNode("2.1 Luong tinh song hat cua cac he vi mo", "2.1.1 Luong tinh song hat cua he buc xa tu", 4);
     book.addNode("2.1 Luong tinh song hat cua cac he vi mo", "2.1.2 Luong tinh song hat cua vat chat", 3);
     book.addNode("2.2 Cac tinh chat cua song De Broglie", "2.2.1 Ham song phang De Broglie", 2);
