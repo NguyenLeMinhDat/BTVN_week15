@@ -1,10 +1,10 @@
 ## **Giới thiệu** 
 **BTVN**  
 - **Tuan 14-15**  
-![alt text](image-2.png)  
-![alt text](image-3.png)
+![alt text](doc/image-2.png)  
+![alt text](doc/image-3.png)
 - **Tuan 17**  
-![alt text](image-4.png)
+![alt text](doc/image-4.png)
 ## **Hướng dẫn chạy chương trình**
 Giả dụ rằng bạn đã cài đặt trình biên dịch **g++** hoặc bất kì trình biên dịch C++ nào khác.  
 Sau khi clone repo về, hãy mở terminal lên, đảm bảo rằng bạn đang ở đúng vị trí thư mục, chạy câu lệnh sau để chạy chương trình:  
