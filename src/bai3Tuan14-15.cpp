@@ -76,6 +76,7 @@ void PREORDER_travl(Node* t) {
 }
 
 int main() {
+    cout << "----------- Bai 3 ------------" << endl;
     BSTree bst;
 
     bst.insert(5);

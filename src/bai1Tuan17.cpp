@@ -1,5 +1,6 @@
 #include <iostream>
 #include <string>
+#include <ctime>
 
 using namespace std;
 
@@ -8,6 +9,7 @@ private:
     class Node {
     public:
         string title;
+        int index;
         int pages;
         int totalP;
         Node* first;
@@ -24,16 +26,6 @@ private:
                 delete temp;
             }
         }
-
-        // int totalPages() {
-        //     int sum = pages;
-        //     Node* r = first;
-        //     while(r) {
-        //         sum += r->totalPages();
-        //         r = r->next;
-        //     }
-        //     return sum;
-        // }
     };
 protected:
     Node* root;
